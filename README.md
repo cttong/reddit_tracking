@@ -1,22 +1,22 @@
 # To Do's
 
-General:
--Test Language Model on Data by Tuesday
 
--Subreddit over Time Feasibility
+## Major Priorities:
+-PRIORITY: Data scraper
+	-Change filter size to >, 1 rather than > 5
+-Scrape comments alt-right/nazi websites to use as a baseline
+-Come up with a list of other subreddits to look at
+	-Get r/liberal and r/conservative
+	-Get other extreme subreddits, accounting for identity, candidates, etc. 
+-Setup a script which compares by author/subreddit over time to r/thealtright and calculate some distance
+	-When comparing posts language - look at author level, not post level
+-Compare the language between these subreddits. Is the left and right that different? If they are similar - maybe this indicates something.
 
--Figure out BigQuery API s.t. we can download data for authors of other subreddits
-
-
-Implementations of the Language Model (posted by Lillian)
-
-https://github.com/jmhessel/FightingWords
-
-https://pypi.python.org/pypi/fightin-words/1.0.4
-
-https://gist.github.com/thiagomarzagao/5851207
-
-
-Currently -Nat:
-
--Playing with Subreddit over Time - Goal is to get a bunch of Visualizations showing the feasibility of this approach just by looking at co-occurrences of subreddits over time (in 6mo chunks)
+## Minor Priorities 
+-Check the rank graph either by using (1) frequency of users and (2) frequency/rank of post count
+-Seperating out comments vs. posts and check if there are differences between them
+-Cut the data into 4 quartiles by the amount of posts they make and see if there are differences
+-Maybe look at the founders - and find who is similar to those users
+	-Look at the earliest 10 posts from users 
+-Treat all number words as a single "word"? Or dates?
+-Remove Bots from the dataset (Chenhao)
