@@ -4,6 +4,6 @@ Data stored here in the following folders:
 
 **botlist**: list of bots from bigquery and chenhao
 
-*language_models**: raw data from 4000 users in r/sfp and r/td to be used for building language baseline models
+**language_models**: raw data from 4000 users in r/sfp and r/td to be used for building language baseline models
 
-*user_histories**: raw data from 4000 users in r/sfp and r/td to be examined 
+**user_histories**: raw data from 4000 users in r/sfp and r/td to be examined 
