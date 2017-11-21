@@ -1,0 +1,67 @@
+--1) First post in r/<target_subreddit> is during Feb 1 - July 15, 2016
+--2) Made 2+ posts in r/<target_subreddit> at least 1 month apart during Feb 1 - July 15, 2016
+--3) Made at least 1 post _anywhere_ during Jan 2016 (This is what you're talking about right?)
+--4) Made at least 1 post before 1 year prior _anywhere_ relative to their first post on r/<target_subreddit>
+--5) Did not post on any of the other 3 target subreddits 
+   
+-----[STEP 1: SCRIPT TO GET USERS WHO FULFILL 1,2,3,4]-----
+--Check 3: Get list of authors who posted in Jan 2016 
+SELECT author 
+ FROM [fh-bigquery:reddit_comments.all]
+ WHERE author in 
+	--Check 4: List of authors who have made a post at least 1 year before their first post on r/altright
+	(SELECT a.author as author FROM 
+	  (SELECT a.author, min(b.threshold) as threshold, min(a.created_utc) as firsteverpost
+	   FROM [fh-bigquery:reddit_comments.all] as a 
+	   INNER JOIN
+	   (SELECT author, min(created_utc - 31536000) AS threshold
+		 FROM [fh-bigquery:reddit_comments.all] 
+		 WHERE lower(subreddit) LIKE 'the_donald' --rename this
+		 GROUP BY author
+		 HAVING author IN
+			--Check 2: Get list of authors who posted during the Presidential Primary in <target_subreddit> at least once more time after their first post during <Primary Season>
+			(SELECT c.author AS author 
+			 FROM(SELECT c.author, max(c.created_utc) as lastsubpost, max(d.firstsubpost + 2592000) AS monthafterfirst
+				FROM [fh-bigquery:reddit_comments.all] AS c 
+				INNER JOIN(
+				--Check 1: Get list of authors who posted during the Presidential Primary in <target_subreddit> at least once during <Primary Season>
+				  SELECT author, min(created_utc) as firstsubpost
+				   FROM [fh-bigquery:reddit_comments.all]
+				   WHERE lower(subreddit) == 'the_donald' --rename this
+				   GROUP BY author
+				   HAVING firstsubpost < 1468540800
+				   AND firstsubpost >= 1454284800)
+					AS d ON c.author == d.author
+				WHERE lower(subreddit) == 'the_donald' --rename this
+				 AND c.created_utc < 1468540800
+				GROUP BY c.author
+				HAVING lastsubpost >= monthafterfirst)) --Check that these users posted in Jan 2016 
+		 AND author != '[deleted]')
+		 AS b ON a.author = b.author
+		 GROUP BY a.author
+		 HAVING firsteverpost < threshold))
+  AND created_utc < 1454284800
+  AND created_utc >= 1451606400		 
+ GROUP BY author
+ --Save these users to [project.candidates]
+ 
+-----[STEP 2: COUNT # of TIMES THESE CANDIDATES POSTED IN OTHER <TARGET_SUBREDDITS> (Repeat for each s subreddit-----
+SELECT author, count(author) AS td_count --rename this
+FROM [fh-bigquery:reddit_comments.all]
+WHERE created_utc < 1468540800
+AND created_utc >= 1454284800
+AND lower(subreddit) == 'the_donald' --rename this
+GROUP BY author
+HAVING author IN 
+  (SELECT author FROM [the_donald_data.candidates]) --rename this 
+--Save these to [project.ignore_<subreddit>]
+ 
+ -----[STEP 3: SCRIPT TO GET USERS WHO FULFILL [1-5]-----
+ --List of authors who have made a post at least 1 year before their first post on <target subreddit>
+ --List of 
+SELECT author, body, subreddit, created_utc, score
+FROM [fh-bigquery:reddit_comments.all]
+WHERE created_utc < 1468540800
+GROUP BY author
+HAVING author IN (SELECT author FROM [nlp-altright-project:the_donald_data.candidates]) 
+AND author NOT IN (SELECT author FROM [nlp-altright-project:the_donald_data.step2_ignorelist_sfp]) --rename this
